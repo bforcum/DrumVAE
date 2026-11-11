@@ -14,18 +14,18 @@ groove_dir = Path(groove_path)
 
 def fetch(force_download=False, verbosity=0):
     if force_download or not (groove_dir/"info.csv").is_file():
-        download(verbosity)
-        extract(verbosity)
-        process_and_save(verbosity)
+        _download(verbosity)
+        _extract(verbosity)
+        _process_and_save(verbosity)
 
 # Downloads and runs all subsequent steps
-def download(verbosity=0):
+def _download(verbosity=0):
     if (verbosity > 0): print("Downloading...", end='', flush=True)
     # Pass data_dir directly into the load function
     urllib.request.urlretrieve(groove_url, download_path + 'groove.zip')
     if (verbosity > 0): print("\rDownloaded        ")
 
-def extract(verbosity=0):
+def _extract(verbosity=0):
     if (verbosity > 0): print("Extracting...", end='', flush=True)
     try:
         zipfile.ZipFile(download_path + 'groove.zip', 'r').extractall(groove_path + '../')
@@ -34,11 +34,10 @@ def extract(verbosity=0):
             pass
     if (verbosity > 0): print("\rExtracted        ")
 
-def process_and_save(verbosity = 0):
+def _process_and_save(verbosity = 0):
     if verbosity == 1:
         print("Parsing...", end='', flush=True)
-    recordings_info = pd.read_csv(groove_path + "info.csv", usecols=["midi_filename", "time_signature"])
-    recordings_paths = recordings_info[recordings_info["time_signature"] == "4-4"].drop(columns="time_signature")
+    recordings_paths = _getTable()
 
     for i, fileName in enumerate(recordings_paths["midi_filename"]):
         if verbosity > 1 and i % 100 == 0:
@@ -70,6 +69,29 @@ def process_and_save(verbosity = 0):
         np.save(groove_path + fileName[:-4], grid)
     if verbosity > 0:
         print(f"\r{len(recordings_paths)} tracks parsed")
+
+def _getTable():
+    recordings_info = pd.read_csv(groove_path + "info.csv", usecols=["id", "bpm", "split", "midi_filename", "time_signature"])
+    recordings_paths = recordings_info[recordings_info["time_signature"] == "4-4"]
+    recordings_paths = recordings_paths.drop(columns="time_signature")
+    return recordings_paths
+
+def asPandas(preSplit = True):
+    fetch()
+    df = _getTable()
+    data = []
+    for filename in df["midi_filename"]:
+        data.append(np.load(groove_dir / (filename[:-4] + ".npy")))
+    df["data"] = data
+    df = df.drop(columns="midi_filename")
+    if not preSplit:
+        return df
+    train_set = df[df["split"] == "train"]
+    val_set = df[df["split"] == "validation"]
+    test_set = df[df["split"] == "test"]
+
+    return (train_set, val_set, test_set)
+    
 
 if __name__ == "__main__":
     fetch(force_download=True, verbosity=1)
