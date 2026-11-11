@@ -1,0 +1,43 @@
+download_path = "data/downloads/"
+groove_path = "data/groove/"
+groove_url = "https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip"
+
+instrumentMap = {
+    0: "Kick",
+    1: "Snare",
+    2: "Rimshot",
+    3: "High Tom",
+    4: "Low-Mid Tom",
+    5: "High Floor Tom",
+    6: "Open HH",
+    7: "Closed HH",
+    8: "Pedal HH",
+    9: "Crash",
+    10: "Ride Cymbal",
+    11: "Ride Bell",
+}
+
+noteMap = {
+    36: 0,
+    37: 1,
+    38: 1,
+    40: 2,
+    48: 3,
+    50: 3,
+    45: 4,
+    47: 4,
+    43: 5,
+    58: 5,
+    46: 6,
+    26: 6,
+    42: 7,
+    22: 7,
+    44: 8,
+    49: 9,
+    55: 9,
+    57: 9,
+    52: 9,
+    51: 10,
+    59: 10,
+    53: 11,  
+}
