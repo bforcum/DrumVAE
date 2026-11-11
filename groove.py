@@ -8,12 +8,15 @@ import zipfile
 from mido import MidiFile
 
 from constants import *
+import os
+from dotenv import load_dotenv
 
-download_dir = Path(download_path)
-groove_dir = Path(groove_path)
+load_dotenv()
+
+data_path = Path(os.getenv("DATA_PATH"))
 
 def fetch(force_download=False, verbosity=0):
-    if force_download or not (groove_dir/"info.csv").is_file():
+    if force_download or not (data_path/"groove/info.csv").is_file():
         _download(verbosity)
         _extract(verbosity)
         _process_and_save(verbosity)
@@ -21,14 +24,15 @@ def fetch(force_download=False, verbosity=0):
 # Downloads and runs all subsequent steps
 def _download(verbosity=0):
     if (verbosity > 0): print("Downloading...", end='', flush=True)
+    (data_path/"downloads").mkdir(parents=True, exist_ok=True)
     # Pass data_dir directly into the load function
-    urllib.request.urlretrieve(groove_url, download_path + 'groove.zip')
+    urllib.request.urlretrieve(groove_url, data_path / 'downloads/groove.zip')
     if (verbosity > 0): print("\rDownloaded        ")
 
 def _extract(verbosity=0):
     if (verbosity > 0): print("Extracting...", end='', flush=True)
     try:
-        zipfile.ZipFile(download_path + 'groove.zip', 'r').extractall(groove_path + '../')
+        zipfile.ZipFile(data_path/'downloads/groove.zip', 'r').extractall(data_path)
     except:
         # Zip archive contains a reference to an incorrectly formatted path and always throws an error
             pass
@@ -43,7 +47,7 @@ def _process_and_save(verbosity = 0):
         if verbosity > 1 and i % 100 == 0:
             print(f"\r{i:04} tracks parsed", end='')
         
-        mid = MidiFile(groove_path + fileName)
+        mid = MidiFile(data_path/"groove"/fileName)
 
         # Divide each beat (4th) by 4 = 2^2 for 16ths
         ticks_per_16th = mid.ticks_per_beat >> 2
@@ -66,12 +70,12 @@ def _process_and_save(verbosity = 0):
         for note in notes:
             grid[note[0]] = note[1]
         # Save in same directory with new extension
-        np.save(groove_path + fileName[:-4], grid)
+        np.save(data_path/"groove"/(fileName[:-4]), grid)
     if verbosity > 0:
         print(f"\r{len(recordings_paths)} tracks parsed")
 
 def _getTable():
-    recordings_info = pd.read_csv(groove_path + "info.csv", usecols=["id", "bpm", "split", "midi_filename", "time_signature"])
+    recordings_info = pd.read_csv(data_path/"groove"/"info.csv", usecols=["id", "bpm", "split", "midi_filename", "time_signature"])
     recordings_paths = recordings_info[recordings_info["time_signature"] == "4-4"]
     recordings_paths = recordings_paths.drop(columns="time_signature")
     return recordings_paths
@@ -81,7 +85,7 @@ def asPandas(preSplit = True):
     df = _getTable()
     data = []
     for filename in df["midi_filename"]:
-        data.append(np.load(groove_dir / (filename[:-4] + ".npy")))
+        data.append(np.load(data_path/"groove"/(filename[:-4] + ".npy")))
     df["data"] = data
     df = df.drop(columns="midi_filename")
     if not preSplit:

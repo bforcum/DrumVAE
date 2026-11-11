@@ -1,5 +1,3 @@
-download_path = "data/downloads/"
-groove_path = "data/groove/"
 groove_url = "https://storage.googleapis.com/magentadata/datasets/groove/groove-v1.0.0-midionly.zip"
 
 instrumentMap = {
