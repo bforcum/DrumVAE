@@ -95,7 +95,7 @@ for i, fileName in enumerate(df["midi_filename"]):
     # ticks = 0
     for msg in mid.tracks[0]:
         # ticks += msg.time 
-        if msg.type == 'note_on':
+        if msg.type == 'note_on' and msg.velocity > 0:
             counts[noteMap[msg.note]] += 1
             # hitTime = ticks * rate
             # hits.append(hitTime)
