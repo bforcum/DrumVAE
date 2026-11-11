@@ -4,6 +4,23 @@ import pandas as pd
 from pathlib import Path 
 import urllib.request
 import zipfile
+from importlib.util import find_spec
+
+import sys
+# caution: path[0] is reserved for script path (or '' in REPL)
+
+# Source - https://stackoverflow.com/a/14050282
+# Posted by yarbelk, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-11-11, License - CC BY-SA 4.0
+
+# If mido or dotenv not installed check /scratch/bforcum1/packages/
+if find_spec("mido") == None or find_spec("dotenv") == None:
+# End attriution
+    # Source - https://stackoverflow.com/a/4383597
+    # Posted by Cameron, modified by community. See post 'Timeline' for change history
+    # Retrieved 2026-11-11, License - CC BY-SA 4.0
+    sys.path.insert(1, '/scratch/bforcum1/packages/')
+    # End attribution
 
 from mido import MidiFile
 
