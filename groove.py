@@ -97,7 +97,7 @@ def _getTable():
     recordings_paths = recordings_paths.drop(columns="time_signature")
     return recordings_paths
 
-def asPandas(preSplit = True):
+def asPandas(split = False):
     fetch()
     df = _getTable()
     data = []
@@ -105,7 +105,7 @@ def asPandas(preSplit = True):
         data.append(np.load(data_path/"groove"/(filename[:-4] + ".npy")))
     df["data"] = data
     df = df.drop(columns="midi_filename")
-    if not preSplit:
+    if not split:
         return df
     train_set = df[df["split"] == "train"]
     val_set = df[df["split"] == "validation"]

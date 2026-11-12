@@ -9,7 +9,7 @@ import constants
 
 
 start = time.time()
-df = groove.asPandas(preSplit=False)
+df = groove.asPandas()
 end = time.time()
 
 print(f"It took {end - start:.3f} seconds to parse all {len(df)} MIDI files")
