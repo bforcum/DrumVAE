@@ -1,13 +1,14 @@
 import tensorflow as tf
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Layer, Dense, Reshape
-from tensorflow.keras.activations import relu, tanh
-from tensorflow.keras.regularizers import L2
+import keras
+from keras import Sequential
+from keras import layers
+from keras.activations import relu, tanh
+from keras.regularizers import L2
 
 import numpy as np
 
 # Attribution: Claude Sonnet 5.5
-class RangeScaling(Layer):
+class RangeScaling(layers.layerLayer):
     def __init__(self, lows=(0.0, 0.0, -0.5), highs=(1.0, 1.0, 0.5), **kwargs):
         super().__init__(**kwargs)
         # Minima of desired scaling intervals across last dimension of input
@@ -30,21 +31,26 @@ import groove
 
 denseEncoder = Sequential(
     [
-        
-        Dense(384, activation=relu, name="encode1"),
-        Dense(128, activation=relu, name="encode2"),
-        Dense(64, name="latent"), #, activity_regularizer=L2(1e-4)),
-        Dense(128, activation=relu, name="decode1"),
-        Dense(384, activation=relu, name="decode2"),
-        Dense(1152, activation=tanh, name="decode3"),
-        Reshape((384,3), name="stack"),
+        keras.Input(shape=(1152,)),   
+        layers.Dense(384, activation=relu, name="encode1"),
+        layers.Dense(128, activation=relu, name="encode2"),
+        layers.Dense(64, name="latent"), #, activity_regularizer=L2(1e-4)),
+        layers.Dense(128, activation=relu, name="decode1"),
+        layers.Dense(384, activation=relu, name="decode2"),
+        layers.Dense(1152, activation=tanh, name="decode3"),
+        layers.Reshape((384,3), name="stack"),
         RangeScaling(), # desired arguments set as defaults
-        Reshape((1152,))
+        layers.Reshape((1152,))
     ]
 )
 
-df = groove.asPandas()
-track = df["data"].iloc[0]
-X = np.asarray([track[32*n:32*(n+1)].flatten() for n in range(0,4)])
+denseEncoder.compile(optimizer="adam", loss="mse", metrics=["cosine_similarity"])
 
-print(denseEncoder(X))
+X_train, X_validation, X_test = groove.asPandas(split=True)
+
+track = X_train["data"].iloc[0]
+bars = -(-len(track) // 16)
+track = np.pad(track, 16 * bars)
+X = np.asarray([track[32*n:32*(n+1)].flatten() for n in range(0,bars-1)])
+
+Sequential.fit(X)

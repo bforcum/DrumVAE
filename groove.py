@@ -108,10 +108,10 @@ def asPandas(split = False):
     if not split:
         return df
     train_set = df[df["split"] == "train"]
-    val_set = df[df["split"] == "validation"]
     test_set = df[df["split"] == "test"]
+    val_set = df[df["split"] == "validation"]
 
-    return (train_set, val_set, test_set)
+    return (train_set, test_set, val_set,)
     
 
 if __name__ == "__main__":
